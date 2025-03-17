@@ -1,0 +1,6 @@
+FROM swaggerapi/swagger-ui:latest
+
+RUN mkdir /swagger
+COPY doc/openapi/openapi.yaml /swagger
+ENV API_URL ./openapi.yaml
+ENV SWAGGER_JSON /swagger/openapi.yaml

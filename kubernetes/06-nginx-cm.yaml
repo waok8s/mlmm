@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-cm
+  namespace: mlmm
+data:
+  default.conf.template: |
+    server {
+        listen 80;
+        server_name $hostname;
+
+        resolver ${KUBE_DNS_IP} valid=1s;
+
+        location ~ /redfish/v1/Systems/([a-zA-Z0-9!-.:-@\\\[-`\{-~]+)/MachineLearningModel/$ {
+            if ($request_method = GET) {
+                proxy_pass                    http://mlmm-svc.mlmm.svc.cluster.local:8000/redfish/v1/Systems/$1/MachineLearningModel;
+            }
+            if ($request_method != GET) {
+                proxy_pass                    https://${REDFISH_HOST}:${REDFISH_PORT}/redfish/v1/Systems/$1/MachineLearningModel;
+            }
+            proxy_ssl_verify              off;
+            proxy_pass_request_headers    on;
+        }
+
+        location ~ /redfish/v1/Systems/([a-zA-Z0-9!-.:-@\\\[-`\{-~]+)/MachineLearningModel(.+)$ {
+            proxy_pass                    https://${REDFISH_HOST}:${REDFISH_PORT}/redfish/v1/Systems/$1/MachineLearningModel$2;
+            proxy_ssl_verify              off;
+            proxy_pass_request_headers    on;
+        }
+
+        location ~ /redfish/v1/Systems/([a-zA-Z0-9!-.:-@\\\[-`\{-~]+)/MachineLearningModel$ {
+            if ($request_method = GET) {
+                proxy_pass                    http://mlmm-svc.mlmm.svc.cluster.local:8000/redfish/v1/Systems/$1/MachineLearningModel;
+            }
+            if ($request_method != GET) {
+                proxy_pass                    https://${REDFISH_HOST}:${REDFISH_PORT}/redfish/v1/Systems/$1/MachineLearningModel;
+            }
+            proxy_ssl_verify              off;
+            proxy_pass_request_headers    on;
+        }
+
+        location ~ /redfish/v1/Systems/([a-zA-Z0-9!-.:-@\\\[-`\{-~]+)/(.*)$ {
+            proxy_pass                    https://${REDFISH_HOST}:${REDFISH_PORT}/redfish/v1/Systems/$1/$2;
+            proxy_ssl_verify              off;
+            proxy_pass_request_headers    on;
+        }
+
+        location ~ /redfish/v1/Systems/([a-zA-Z0-9!-.:-@\\\[-`\{-~]+)$ {
+            if ($request_method = GET) {
+                proxy_pass                    http://mlmm-svc.mlmm.svc.cluster.local:8000/redfish/v1/Systems/$1;
+            }
+            if ($request_method != GET) {
+                proxy_pass                    https://${REDFISH_HOST}:${REDFISH_PORT}/redfish/v1/Systems/$1;
+            }
+            proxy_ssl_verify              off;
+            proxy_pass_request_headers    on;
+        }
+
+        location / {
+            proxy_pass                    https://${REDFISH_HOST}:${REDFISH_PORT}/;
+            proxy_ssl_verify              off;
+            proxy_pass_request_headers    on;
+        }
+    }

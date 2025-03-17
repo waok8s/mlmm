@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: mlmm-ds
+  labels:
+    app: mlmm-ds
+  namespace: mlmm
+spec:
+  selector:
+    matchLabels:
+      app: mlmm-pod
+  template:
+    metadata:
+      labels:
+        app: mlmm-pod
+    spec:
+      serviceAccountName: get-mlmodels
+      initContainers:
+        - name: get-mlmodel
+          image: nedopjcontainerregistry.azurecr.io/nedopj/mlmm-init:2.1
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /node
+              name: node-info
+          env:
+            - name: NODENAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: APISERVER
+              value: https://kubernetes.default.svc
+            - name: SERVICEACCOUNT
+              value: /var/run/secrets/kubernetes.io/serviceaccount
+            - name: SCRIPT
+              value: |
+                set -eo pipefail
+
+                NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
+                TOKEN=$(cat ${SERVICEACCOUNT}/token)
+                CACERT=${SERVICEACCOUNT}/ca.crt
+
+                curl --cacert ${CACERT} \
+                     --header "Authorization: Bearer ${TOKEN}" \
+                     -X GET ${APISERVER}/apis/nedo.com/v1/namespaces/${NAMESPACE}/mlmodels/${NODENAME} > /node/mlmodel.json
+
+                jq .machineLearningModels /node/mlmodel.json > /node/data.json
+
+                REDFISH_HOST=$(jq '."redfish"."host"' /node/mlmodel.json)
+                REDFISH_PORT=$(jq '."redfish"."port"' /node/mlmodel.json)
+
+                echo "export REDFISH_HOST=${REDFISH_HOST}" > /node/env
+                echo "export REDFISH_PORT=${REDFISH_PORT}" >> /node/env
+          command: ["/bin/bash", "-c"]
+          args:
+            - 'echo "$$SCRIPT" > /tmp/script && bash /tmp/script'
+      containers:
+        - name: mlmm-container
+          image: nedopjcontainerregistry.azurecr.io/nedopj/mlmm:2.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: node-info
+              mountPath: /node
+          env:
+            - name: MLM_DATA_FILE_PATH
+              value: /node/data.json
+            - name: REDFISH_SCHEME
+              value: https
+          command: [ "/bin/bash", "-c" ]
+          args: [ "source /node/env && gunicorn --workers 1 --threads 2 --bind :8000 --access-logfile - 'mlmm.app:create_app()'" ]
+      volumes:
+        - name: node-info
+          emptyDir: {}

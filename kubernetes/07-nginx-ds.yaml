@@ -1,0 +1,78 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-ds
+  labels:
+    app: nginx-ds
+  namespace: mlmm
+spec:
+  selector:
+    matchLabels:
+      app: nginx-pod
+  template:
+    metadata:
+      labels:
+        app: nginx-pod
+    spec:
+      serviceAccountName: get-mlmodels
+      initContainers:
+        - name: get-mlmodel
+          image: nedopjcontainerregistry.azurecr.io/nedopj/mlmm-init:2.1
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: /node
+              name: node-info
+          env:
+            - name: NODENAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: APISERVER
+              value: https://kubernetes.default.svc
+            - name: SERVICEACCOUNT
+              value: /var/run/secrets/kubernetes.io/serviceaccount
+            - name: SCRIPT
+              value: |
+                set -eo pipefail
+
+                NAMESPACE=$(cat ${SERVICEACCOUNT}/namespace)
+                TOKEN=$(cat ${SERVICEACCOUNT}/token)
+                CACERT=${SERVICEACCOUNT}/ca.crt
+
+                curl --cacert ${CACERT} \
+                     --header "Authorization: Bearer ${TOKEN}" \
+                     -X GET ${APISERVER}/apis/nedo.com/v1/namespaces/${NAMESPACE}/mlmodels/${NODENAME} > /node/mlmodel.json
+
+                REDFISH_HOST=$(jq '."redfish"."host"' /node/mlmodel.json)
+                REDFISH_PORT=$(jq '."redfish"."port"' /node/mlmodel.json)
+
+                echo "export REDFISH_HOST=${REDFISH_HOST}" > /node/env
+                echo "export REDFISH_PORT=${REDFISH_PORT}" >> /node/env
+          command: ["/bin/bash", "-c"]
+          args:
+            - 'echo "$$SCRIPT" > /tmp/script && bash /tmp/script'
+      containers:
+        - name: nginx-container
+          image: nginx:1.22
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: node-info
+              mountPath: /node
+            - name: nginx-conf
+              mountPath: /etc/nginx/templates
+          env:
+            - name: KUBE_DNS_IP
+              value: 10.96.0.10
+          command: ["/bin/bash", "-c"]
+          args: ["source /node/env && /docker-entrypoint.sh nginx -g 'daemon off;'"]
+      volumes:
+        - name: node-info
+          emptyDir: {}
+        - name: nginx-conf
+          configMap:
+            name: nginx-cm
+            items:
+              - key: default.conf.template
+                path: default.conf.template

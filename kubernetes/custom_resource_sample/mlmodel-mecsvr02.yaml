@@ -1,0 +1,19 @@
+apiVersion: nedo.com/v1
+kind: MLModel
+metadata:
+  name: nedo-mecsvr02
+  namespace: mlmm
+redfish:
+  host: 192.168.0.120
+  port: 443
+machineLearningModels:
+  powerConsumptionModel:
+    name: PC-ThinkSystemSR630-2CPU
+    url: http://x.x.x.x
+    type: V2InferenceProtocol
+    version: v0.1.0
+  responseTimeModel:
+    name: RT-ThinkSystemSR630-2CPU
+    url: http://x.x.x.x
+    type: V2InferenceProtocol
+    version: v0.1.0

@@ -1,0 +1,53 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: mlmodels.nedo.com
+spec:
+  group: nedo.com
+  names:
+   plural: mlmodels
+   singular: mlmodel
+   kind: MLModel
+   shortNames:
+   - mlm
+  scope: Namespaced
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            redfish:
+              type: object
+              properties:
+                host:
+                  type: string
+                port: 
+                  type: integer
+            machineLearningModels:
+              type: object
+              properties:
+                powerConsumptionModel:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    type:
+                      type: string
+                    version:
+                      type: string
+                responseTimeModel:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    type:
+                      type: string
+                    version:
+                      type: string

@@ -1,0 +1,14 @@
+{
+  "powerConsumptionModel": {
+    "name": "PC-PowerEdgeR650xs-2CPU",
+    "url": "http://10.0.0.20",
+    "type": "V2InferenceProtocol",
+    "version": "v0.1.0"
+  },
+  "responseTimeModel": {
+    "name": "RT-PowerEdgeR650xs-2CPU",
+    "url": "http://10.0.0.20",
+    "type": "V2InferenceProtocol",
+    "version": "v0.1.0"
+  }
+}
