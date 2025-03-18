@@ -1,4 +1,4 @@
-apiVersion: nedo.com/v1
+apiVersion: waok8s.github.io/v1
 kind: MLModel
 metadata:
   name: nedo-mecsvr01

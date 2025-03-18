@@ -42,7 +42,7 @@ spec:
 
                 curl --cacert ${CACERT} \
                      --header "Authorization: Bearer ${TOKEN}" \
-                     -X GET ${APISERVER}/apis/nedo.com/v1/namespaces/${NAMESPACE}/mlmodels/${NODENAME} > /node/mlmodel.json
+                     -X GET ${APISERVER}/apis/waok8s.github.io/v1/namespaces/${NAMESPACE}/mlmodels/${NODENAME} > /node/mlmodel.json
 
                 REDFISH_HOST=$(jq '."redfish"."host"' /node/mlmodel.json)
                 REDFISH_PORT=$(jq '."redfish"."port"' /node/mlmodel.json)

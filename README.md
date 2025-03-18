@@ -5,7 +5,7 @@
 In this directory run:
 
 ```bash
-$ docker build -t nedopj/mlmm:1.0 .
+$ docker build -t nedopj/mlmm:2.1 .
 ```
 
 ## Settings

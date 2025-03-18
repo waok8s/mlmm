@@ -7,5 +7,5 @@ This container image is used as the init-container in kubernetes.
 In this directory run:
 
 ```bash
-$ docker build -t nedopj/mlmm-init:1.0 .
+$ docker build -t nedopj/mlmm-init:2.1 .
 ```

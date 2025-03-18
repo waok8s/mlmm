@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: mlmodels.nedo.com
+  name: mlmodels.waok8s.github.io
 spec:
-  group: nedo.com
+  group: waok8s.github.io
   names:
    plural: mlmodels
    singular: mlmodel

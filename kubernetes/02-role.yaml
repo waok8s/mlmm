@@ -5,6 +5,6 @@ metadata:
   name: get-mlmodels
   namespace: mlmm
 rules:
-  - apiGroups: ["nedo.com"]
+  - apiGroups: ["waok8s.github.io"]
     resources: ["mlmodels"]
     verbs: ["get"]
