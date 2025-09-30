@@ -1,0 +1,21 @@
+{
+  "hosts": [
+    "waok8s-admission-webhook-server.waok8s-webhook.svc",
+    "waok8s-admission-webhook-server.waok8s-webhook.svc.cluster.local",
+    "waok8s-admission-webhook-server.waok8s-webhook.pod.cluster.local"
+  ],
+  "CN": "waok8s-admission-webhook-server.waok8s-webhook.pod.cluster.local",
+  "key": {
+    "algo": "ecdsa",
+    "size": 256
+  },
+  "names": [
+    {
+      "C": "JP",
+      "ST": "",
+      "L": "",
+      "O": "",
+      "OU": ""
+    }
+  ]
+}

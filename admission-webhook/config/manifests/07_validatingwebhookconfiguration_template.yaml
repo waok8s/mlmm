@@ -1,0 +1,36 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: waok8s-webhook-server-admission
+  namespace: waok8s-webhook
+webhooks:
+- name: waok8s-admission-webhook-server.waok8s-webhook.svc
+  clientConfig:
+    service:
+      name: waok8s-admission-webhook-server
+      namespace: waok8s-webhook
+      path: "/validate"
+      port: 8443
+    caBundle: ${CA_BUNDLE_BASE64}
+  rules:
+  - apiGroups: [""]
+    apiVersions: ["v1"]
+    operations: ["CREATE", "UPDATE"]
+    resources: ["pods"]
+    scope: "Namespaced"
+  - apiGroups: ["apps"]
+    apiVersions: ["v1"]
+    operations: ["CREATE", "UPDATE"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    scope: "Namespaced"
+  - apiGroups: ["batch"]
+    apiVersions: ["v1"]
+    operations: ["CREATE", "UPDATE"]
+    resources: ["jobs", "cronjobs"]
+    scope: "Namespaced"
+  failurePolicy: Ignore
+  sideEffects: None
+  admissionReviewVersions: ["v1"]
+  matchConditions:
+  - name: "check-waok8s-annotation"
+    expression: "'waok8s.com/application' in object.metadata.annotations"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: waok8s-admission-webhook-server
+  name: waok8s-admission-webhook-server
+  namespace: waok8s-webhook
+spec:
+  ports:
+  - port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: waok8s-admission-webhook-server
+  type: ClusterIP

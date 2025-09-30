@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: waok8s-admission-webhook-server
+  name: waok8s-admission-webhook-server
+  namespace: waok8s-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waok8s-admission-webhook-server
+  template:
+    metadata:
+      labels:
+        app: waok8s-admission-webhook-server
+    spec:
+      containers:
+      - image: ${IMAGE}
+        command:
+        - /app/webhook-server
+        - --cert=/etc/certs/webhook/tls.crt
+        - --key=/etc/certs/webhook/tls.key
+        - --client-ca-cert=/etc/certs/apiserver/ca.pem
+        - --harbor-host=${HARBOR_URL}
+        - --harbor-ca-cert=/etc/certs/harbor/ca.crt
+        - --log-level=info
+        - --label-name=${LABEL_NAME}
+        name: waok8s-admission-webhook-server
+        ports:
+        - containerPort: 8443
+        volumeMounts:
+        - name: webhook-certs
+          mountPath: "/etc/certs/webhook"
+          readOnly: true
+        - name: client-ca
+          mountPath: "/etc/certs/apiserver"
+          readOnly: true
+        - name: harbor-ca
+          mountPath: "/etc/certs/harbor"
+          readOnly: true
+        resources: 
+          limits:
+            cpu: "100m"
+            memory: "500Mi"
+        securityContext:
+          runAsNonRoot: true
+          readOnlyRootFilesystem: true
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 9999
+          initialDelaySeconds: 3
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9999
+          periodSeconds: 10
+      volumes:
+      - name: webhook-certs
+        secret:
+          secretName: webhook-server-certs
+      - name: client-ca
+        secret:
+          secretName: client-ca
+      - name: harbor-ca
+        secret:
+          secretName: harbor-ca
+      imagePullSecrets:
+      - name: ${PULL_SECRET}
+      serviceAccountName: secret-reader
