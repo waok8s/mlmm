@@ -1,4 +1,4 @@
-module waok8s-admission-webhook
+module github.com/waok8s/mlmm-admission-webhook
 
 go 1.22.0
 
